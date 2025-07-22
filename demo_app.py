@@ -73,11 +73,11 @@ async def scholar_sidebar(deps):
 # mapping agent names to AgentConfig instances.
 
 agent_configs = {
-    "Semantic Scholar": AgentConfig(agent = scholar_agent,
-                                    deps = Library(),
-                                    sidebar_func = scholar_sidebar,
-                                    greeting= "Hello! What should we learn about today?",
-                                    agent_avatar= "📖")}
+    "arXiv Bot": AgentConfig(agent = scholar_agent,
+                             deps = Library(),
+                             sidebar_func = scholar_sidebar,
+                             greeting= "Hello! What should we learn about today?",
+                             agent_avatar= "📖")}
 
 
 
@@ -100,7 +100,7 @@ render_funcs = [render_df, show_warning]
 
 app_config = AppConfig(sidebar_collapsed= False,
                        page_icon= "📖",
-                       page_title= "Semantic Scholar Agent",
+                       page_title= "arXiv Bot",
                        rendering_functions= render_funcs,)
 
 
