@@ -76,14 +76,12 @@ agent_configs = {
     "Semantic Scholar": AgentConfig(agent = scholar_agent,
                                     deps = Library(),
                                     sidebar_func = scholar_sidebar,
-                                    description= "Semantic Scholar paper and author search, with a simple library memory.",
                                     greeting= "Hello! What should we learn about today?",
                                     agent_avatar= "📖")}
 
 
 
 ## Global app configuration configures page title, icon, default sidebar state, default function call visibility, etc.
-
 
 
 import pandas
