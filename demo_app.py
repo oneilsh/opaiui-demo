@@ -13,12 +13,12 @@ dotenv.load_dotenv(override = True)
 ## Agent Definition
 ###############
 
-semantic_scholar_mcp = MCPServerStdio(
+arxiv_mcp = MCPServerStdio(
     command = 'poetry',
     args = ["run", "python", "arxiv_mcp.py"],
 )
 
-scholar_agent = Agent('openai:gpt-4o', toolsets = [semantic_scholar_mcp])
+arxiv_agent = Agent('openai:gpt-4o', toolsets = [arxiv_mcp])
 
 
 ################
@@ -39,7 +39,7 @@ class Library():
             return "None"
         return "\n".join(f"- {entry}" for entry in self.state.library)
 
-@scholar_agent.tool
+@arxiv_agent.tool
 async def add_to_library(ctx: RunContext[Library], article: str) -> str:
     """Add a given article to the library."""
     ctx.deps.add(article)
@@ -51,7 +51,7 @@ async def add_to_library(ctx: RunContext[Library], article: str) -> str:
 ################
 
 # will be given the deps object 
-async def scholar_sidebar(deps):
+async def arxiv_sidebar(deps):
     """Render the agent's sidebar in Streamlit."""
     st.markdown("### Library")
     st.markdown(deps.as_markdown())
@@ -73,9 +73,9 @@ async def scholar_sidebar(deps):
 # mapping agent names to AgentConfig instances.
 
 agent_configs = {
-    "arXiv Bot": AgentConfig(agent = scholar_agent,
+    "arXiv Bot": AgentConfig(agent = arxiv_agent,
                              deps = Library(),
-                             sidebar_func = scholar_sidebar,
+                             sidebar_func = arxiv_sidebar,
                              greeting= "Hello! What should we learn about today?",
                              agent_avatar= "📖")}
 
@@ -105,7 +105,7 @@ app_config = AppConfig(sidebar_collapsed= False,
 
 
 
-@scholar_agent.tool
+@arxiv_agent.tool
 async def show_library(ctx: RunContext[Library]) -> str:
     """Displays the current library to the user as a dataframe when executed."""
     if not ctx.deps.state.library:
