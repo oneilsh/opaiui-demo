@@ -14,7 +14,8 @@ dotenv.load_dotenv(override = True)
 ## Agent Definition
 ###############
 
-# sys.executable is the way to execute the current Python interpreter,
+# This agent uses the MCP server defined in arxiv_mcp.py to search for papers on arXiv.
+# sys.executable is the way to preferred way execute the current Python interpreter in a streamlit app,
 # see streamlit docs: https://docs.streamlit.io/knowledge-base/deploy/invoking-python-subprocess-deployed-streamlit-app
 arxiv_mcp = MCPServerStdio(
     command = f"{sys.executable}",
@@ -28,6 +29,7 @@ arxiv_agent = Agent('openai:gpt-4o', toolsets = [arxiv_mcp])
 ## Deps and Tools
 ################
 
+# we also define additional tools and dependencies (including for state management) for the agent.
 class Library():
     def __init__(self):
         self.state = AgentState()
@@ -42,6 +44,7 @@ class Library():
             return "None"
         return "\n".join(f"- {entry}" for entry in self.state.library)
 
+# this tool is in addition to those provided by the MCP server.
 @arxiv_agent.tool
 async def add_to_library(ctx: RunContext[Library], article: str) -> str:
     """Add a given article to the library."""
@@ -53,7 +56,8 @@ async def add_to_library(ctx: RunContext[Library], article: str) -> str:
 ## Streamlit Sidebar
 ################
 
-# will be given the deps object 
+# a function to render the agent's sidebar in Streamlit.
+# It will be passed the deps object, which contains the agent's state and any other dependencies. 
 async def arxiv_sidebar(deps):
     """Render the agent's sidebar in Streamlit."""
     st.markdown("### Library")
@@ -86,7 +90,6 @@ agent_configs = {
 
 ## Global app configuration configures page title, icon, default sidebar state, default function call visibility, etc.
 
-
 import pandas
 
 async def render_df(df: pandas.DataFrame):
@@ -97,17 +100,14 @@ async def show_warning(message: str):
     """Display a warning message in Streamlit."""
     st.warning(message)
 
-render_funcs = [render_df, show_warning]
-
-
 
 app_config = AppConfig(sidebar_collapsed= False,
                        page_icon= "📖",
                        page_title= "arXiv Bot",
-                       rendering_functions= render_funcs,)
+                       rendering_functions= [render_df, show_warning],)
 
 
-
+# This tool makes use of the `render_df` function to display the library as a DataFrame in the chat.
 @arxiv_agent.tool
 async def show_library(ctx: RunContext[Library]) -> str:
     """Displays the current library to the user as a dataframe when executed."""
