@@ -1,6 +1,7 @@
 from pydantic_ai import Agent
 from pydantic_ai.tools import RunContext
 from pydantic_ai.mcp import MCPServerStdio
+import sys
 
 import streamlit as st
 from opaiui.app import AgentConfig, AppConfig, AgentState, call_render_func, serve
@@ -13,9 +14,11 @@ dotenv.load_dotenv(override = True)
 ## Agent Definition
 ###############
 
+# sys.executable is the way to execute the current Python interpreter,
+# see streamlit docs: https://docs.streamlit.io/knowledge-base/deploy/invoking-python-subprocess-deployed-streamlit-app
 arxiv_mcp = MCPServerStdio(
-    command = 'poetry',
-    args = ["run", "python", "arxiv_mcp.py"],
+    command = f"{sys.executable}",
+    args = ["arxiv_mcp.py"],
 )
 
 arxiv_agent = Agent('openai:gpt-4o', toolsets = [arxiv_mcp])
