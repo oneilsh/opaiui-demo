@@ -4,11 +4,12 @@ from pydantic_ai.mcp import MCPServerStdio
 import sys
 
 import streamlit as st
-from opaiui.app import AgentConfig, AppConfig, AgentState, call_render_func, serve
+from opaiui.app import AgentConfig, AppConfig, AgentState, render_in_chat, current_deps, serve
 
 
 import dotenv
 dotenv.load_dotenv(override = True)
+
 
 ###############
 ## Agent Definition
@@ -48,8 +49,9 @@ class Library():
 @arxiv_agent.tool
 async def add_to_library(ctx: RunContext[Library], article: str) -> str:
     """Add a given article to the library."""
-    ctx.deps.add(article)
-    return f"Article added. Current library size: {len(ctx.deps.state.library)}"
+    deps = current_deps()
+    deps.add(article)
+    return f"Article added. Current library size: {len(deps.state.library)}"
 
 
 ################
@@ -58,17 +60,15 @@ async def add_to_library(ctx: RunContext[Library], article: str) -> str:
 
 # a function to render the agent's sidebar in Streamlit.
 # It will be passed the deps object, which contains the agent's state and any other dependencies. 
-async def arxiv_sidebar(deps):
+async def arxiv_sidebar():
     """Render the agent's sidebar in Streamlit."""
+    deps = current_deps()
+
     st.markdown("### Library")
     st.markdown(deps.as_markdown())
-
-    def clear_library():
-        """Clear the library."""
-        deps.state.library = []
     
     if st.button("Clear Library"):
-        clear_library()
+        deps.state.library = []
         st.rerun()
 
 
@@ -112,11 +112,11 @@ app_config = AppConfig(sidebar_collapsed= False,
 async def show_library(ctx: RunContext[Library]) -> str:
     """Displays the current library to the user as a dataframe when executed."""
     if not ctx.deps.state.library:
-        await call_render_func("show_warning", {"message": "Library is empty."}, before_agent_response = True)
+        await render_in_chat("show_warning", {"message": "Library is empty."}, before_agent_response = True)
         return "Library is empty. A warning has been displayed to the user prior to this response."
     
     df = pandas.DataFrame(ctx.deps.state.library, columns=["Articles"])
-    await call_render_func("render_df", {"df": df})
+    await render_in_chat("render_df", {"df": df})
     return "Library will be displayed as a DataFrame *below* your response in the chat. You may refer to it, but do not repeat the library contents in your response."
 
 
